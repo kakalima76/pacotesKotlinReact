@@ -19,7 +19,9 @@ import {
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
-  
+  useEffect(() => {
+
+      }, [])
 
   
   return (
@@ -35,7 +37,7 @@ function AppContent() {
 
 
   useEffect(() => {
-  NativeModules.PersonsFunctions.somar(100, 20)
+  NativeModules.PersonsFunctions.somar(200, 400)
     .then((valor: number) => {
       setResultado(valor);
     })
@@ -53,13 +55,17 @@ function AppContent() {
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   text: {
     fontSize: 30,
   },
 });
+
 
 export default App;
