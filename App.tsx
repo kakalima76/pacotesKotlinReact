@@ -7,7 +7,7 @@ import {
   useColorScheme,
   View,
   Text,
-  
+
 } from 'react-native';
 import {
   SafeAreaProvider,
@@ -19,11 +19,7 @@ import {
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
-  useEffect(() => {
 
-      }, [])
-
-  
   return (
     <SafeAreaProvider>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />

@@ -1,6 +1,7 @@
 package com.app
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -13,13 +14,16 @@ import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
-import android.app.AlertDialog
 
 class MainActivity : ReactActivity() {
 
     private var waitingForBackgroundPermission = false
 
-
+    override fun onCreate(savedInstanceState: Bundle?) {
+        // Passar null garante estabilidade com react-native-screens / reanimated em recreações da Activity
+        super.onCreate(null)
+        requestLocationPermission()
+    }
 
     private fun requestLocationPermission() {
         val fineGranted = ContextCompat.checkSelfPermission(
@@ -39,7 +43,7 @@ class MainActivity : ReactActivity() {
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ),
-                100
+                LOCATION_PERMISSION_REQUEST_CODE
             )
         } else {
             requestBackgroundLocationPermission()
@@ -53,7 +57,7 @@ class MainActivity : ReactActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        if (requestCode == 100) {
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             val fineGranted = ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -82,25 +86,25 @@ class MainActivity : ReactActivity() {
     }
 
     private fun requestBackgroundLocationPermission() {
-        if (
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-            !hasBackgroundLocationPermission()
-        ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !hasBackgroundLocationPermission()) {
+            if (isFinishing || isDestroyed) return
+
             AlertDialog.Builder(this)
                 .setTitle("Localização em segundo plano")
                 .setMessage(
-                    "Vá para a aba de PERMISSOES, clique em LOCALIZAÇAO " +
-                            "e AUTORIZE a permissão para TODO O TEMPO" +
-                            " para continuar usando o aplicativo."
+                    "Vá para a aba de PERMISSÕES, clique em LOCALIZAÇÃO " +
+                            "e AUTORIZE a permissão para \"Permitir o tempo todo\" " +
+                            "para continuar usando o aplicativo."
                 )
-                .setNegativeButton("Agora não", null)
+                .setNegativeButton("Agora não") { _, _ ->
+                    // Trata o cancelamento sem travar a navegação do usuário
+                    waitingForBackgroundPermission = false
+                }
                 .setPositiveButton("Abrir configurações") { _, _ ->
-
                     val intent = Intent(
                         Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                         Uri.parse("package:$packageName")
                     )
-
                     waitingForBackgroundPermission = true
                     startActivity(intent)
                 }
@@ -109,6 +113,8 @@ class MainActivity : ReactActivity() {
     }
 
     private fun showBackgroundPermissionRequiredMessage() {
+        if (isFinishing || isDestroyed) return
+
         AlertDialog.Builder(this)
             .setTitle("Permissão necessária")
             .setMessage(
@@ -122,10 +128,6 @@ class MainActivity : ReactActivity() {
             .show()
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requestLocationPermission()
-    }
     override fun onResume() {
         super.onResume()
 
@@ -143,4 +145,7 @@ class MainActivity : ReactActivity() {
     override fun createReactActivityDelegate(): ReactActivityDelegate =
         DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
 
+    companion object {
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 100
+    }
 }
