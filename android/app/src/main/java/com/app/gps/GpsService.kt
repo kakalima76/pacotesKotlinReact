@@ -27,10 +27,7 @@ class GpsService : Service() {
 
             for (location in locationResult.locations) {
 
-                GpsLocationBus.emit(
-                    location.latitude,
-                    location.longitude
-                )
+                GpsLocationBus.emit(location)
             }
         }
     }
@@ -102,10 +99,7 @@ class GpsService : Service() {
 
             if (location != null) {
 
-                GpsLocationBus.emit(
-                    location.latitude,
-                    location.longitude
-                )
+                GpsLocationBus.emit(location)
             }
         }
     }

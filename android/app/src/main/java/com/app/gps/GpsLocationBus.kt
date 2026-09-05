@@ -1,24 +1,23 @@
 package com.app.gps
 
+import android.location.Location
+
 object GpsLocationBus {
 
     private val listeners =
-        mutableSetOf<(Double, Double) -> Unit>()
+        mutableSetOf<(Location) -> Unit>()
 
-    fun subscribe(listener: (Double, Double) -> Unit) {
+    fun subscribe(listener: (Location) -> Unit) {
         listeners.add(listener)
     }
 
-    fun unsubscribe(listener: (Double, Double) -> Unit) {
+    fun unsubscribe(listener: (Location) -> Unit) {
         listeners.remove(listener)
     }
 
-    fun emit(
-        latitude: Double,
-        longitude: Double
-    ) {
+    fun emit(location: Location) {
         listeners.forEach { listener ->
-            listener(latitude, longitude)
+            listener(location)
         }
     }
 }

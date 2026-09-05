@@ -20,8 +20,6 @@ const { GpsService } = NativeModules;
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
-
-
   return (
     <SafeAreaProvider>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
@@ -31,10 +29,7 @@ function App() {
 }
 
 function AppContent() {
-const [location, setLocation] = useState<{
-      latitude: number;
-      longitude: number;
-    } | null>(null);
+const [location, setLocation] = useState();
 
   useEffect(() => {
     const gpsEmitter = new NativeEventEmitter(GpsService);
@@ -53,7 +48,7 @@ const [location, setLocation] = useState<{
     return () => {
       subscription.remove();
     };
-  }, [location]);
+  }, []);
 
 
   return (

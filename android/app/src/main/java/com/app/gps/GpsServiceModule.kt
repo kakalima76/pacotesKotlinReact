@@ -1,5 +1,6 @@
 package com.app.gps
-
+import com.app.gps.GpsLocationBus
+import android.location.Location
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -10,12 +11,9 @@ class GpsServiceModule(
 ) : ReactContextBaseJavaModule(reactContext) {
 
     private val locationListener:
-                (Double, Double) -> Unit = { latitude, longitude ->
+                (Location) -> Unit = { location ->
 
-        sendLocation(
-            latitude,
-            longitude
-        )
+        sendLocation(location)
     }
 
     init {
@@ -27,13 +25,44 @@ class GpsServiceModule(
     }
 
     private fun sendLocation(
-        latitude: Double,
-        longitude: Double
+        location: Location
     ) {
         val params = Arguments.createMap()
 
-        params.putDouble("latitude", latitude)
-        params.putDouble("longitude", longitude)
+        params.putDouble(
+            "latitude",
+            location.latitude
+        )
+
+        params.putDouble(
+            "longitude",
+            location.longitude
+        )
+
+        params.putDouble(
+            "accuracy",
+            location.accuracy.toDouble()
+        )
+
+        params.putDouble(
+            "altitude",
+            location.altitude
+        )
+
+        params.putDouble(
+            "speed",
+            location.speed.toDouble()
+        )
+
+        params.putDouble(
+            "bearing",
+            location.bearing.toDouble()
+        )
+
+        params.putDouble(
+            "time",
+            location.time.toDouble()
+        )
 
         reactApplicationContext
             .getJSModule(
@@ -50,3 +79,4 @@ class GpsServiceModule(
         super.invalidate()
     }
 }
+
