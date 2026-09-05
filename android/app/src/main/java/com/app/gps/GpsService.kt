@@ -7,14 +7,13 @@ import android.app.Service
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 
 class GpsService : Service() {
 
@@ -28,14 +27,9 @@ class GpsService : Service() {
 
             for (location in locationResult.locations) {
 
-                Log.d(
-                    "GPS_SERVICE",
-                    "Latitude: ${location.latitude}"
-                )
-
-                Log.d(
-                    "GPS_SERVICE",
-                    "Longitude: ${location.longitude}"
+                GpsLocationBus.emit(
+                    location.latitude,
+                    location.longitude
                 )
             }
         }
@@ -49,11 +43,6 @@ class GpsService : Service() {
             locationCallback,
             mainLooper
         )
-
-        Log.d(
-            "GPS_SERVICE",
-            "Atualizações de localização iniciadas"
-        )
     }
 
     private fun stopLocationUpdates() {
@@ -61,17 +50,11 @@ class GpsService : Service() {
         fusedLocationClient.removeLocationUpdates(
             locationCallback
         )
-
-        Log.d(
-            "GPS_SERVICE",
-            "Atualizações de localização interrompidas"
-        )
     }
 
     override fun onCreate() {
-        super.onCreate()
 
-        Log.d("GPS_SERVICE", "onCreate()")
+        super.onCreate()
 
         fusedLocationClient =
             LocationServices.getFusedLocationProviderClient(this)
@@ -92,8 +75,6 @@ class GpsService : Service() {
         startId: Int
     ): Int {
 
-        Log.d("GPS_SERVICE", "onStartCommand()")
-
         val notification = NotificationCompat.Builder(
             this,
             "GPS_CHANNEL"
@@ -106,9 +87,8 @@ class GpsService : Service() {
 
         startForeground(1, notification)
 
-        Log.d("GPS_SERVICE", "startForeground() executado")
-
         startLocationUpdates()
+
         return START_STICKY
     }
 
@@ -122,21 +102,9 @@ class GpsService : Service() {
 
             if (location != null) {
 
-                Log.d(
-                    "GPS_SERVICE",
-                    "Latitude: ${location.latitude}"
-                )
-
-                Log.d(
-                    "GPS_SERVICE",
-                    "Longitude: ${location.longitude}"
-                )
-
-            } else {
-
-                Log.d(
-                    "GPS_SERVICE",
-                    "Localização não disponível"
+                GpsLocationBus.emit(
+                    location.latitude,
+                    location.longitude
                 )
             }
         }
@@ -162,11 +130,6 @@ class GpsService : Service() {
     override fun onDestroy() {
 
         stopLocationUpdates()
-
-        Log.d(
-            "GPS_SERVICE",
-            "onDestroy()"
-        )
 
         super.onDestroy()
     }

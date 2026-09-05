@@ -2,6 +2,7 @@ import { NewAppScreen } from '@react-native/new-app-screen';
 import { useEffect , useState} from 'react';
 import {
   NativeModules,
+  NativeEventEmitter,
   StatusBar,
   StyleSheet,
   useColorScheme,
@@ -14,10 +15,33 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-
+const { GpsService } = NativeModules;
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
+    const [location, setLocation] = useState<{
+      latitude: number;
+      longitude: number;
+    } | null>(null);
+
+  useEffect(() => {
+    const gpsEmitter = new NativeEventEmitter(GpsService);
+
+    const subscription = gpsEmitter.addListener(
+      'gpsLocation',
+      (location) => {
+          console.log(location);
+        setLocation({
+          latitude: location.latitude,
+          longitude: location.longitude,
+        });
+      }
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
 
   return (

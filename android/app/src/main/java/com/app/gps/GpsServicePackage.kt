@@ -5,13 +5,13 @@ import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
 
-class GpsFunctionsPackage : ReactPackage {
+class GpsServicePackage : ReactPackage {
 
     override fun createNativeModules(
         reactContext: ReactApplicationContext
     ): List<NativeModule> {
         return listOf(
-            GpsFunctionsModule(reactContext)
+            GpsServiceModule(reactContext)
         )
     }
 

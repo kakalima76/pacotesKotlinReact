@@ -1,7 +1,7 @@
 package com.app
 
 import android.app.Application
-import com.app.gps.GpsFunctionsPackage
+import com.app.gps.GpsServicePackage
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
@@ -15,7 +15,7 @@ class MainApplication : Application(), ReactApplication {
       context = applicationContext,
       packageList =
         PackageList(this).packages.apply {
-          add(GpsFunctionsPackage())
+          add(GpsServicePackage())
         },
     )
   }
