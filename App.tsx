@@ -1,3 +1,4 @@
+import "./global.css"
 import { NewAppScreen } from '@react-native/new-app-screen';
 import { useEffect , useState} from 'react';
 import {
@@ -53,7 +54,7 @@ const [location, setLocation] = useState();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>
+      <Text className="text-red-500 text-3xl">
        {location?.latitude}
       </Text>
     </View>
