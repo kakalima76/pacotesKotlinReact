@@ -14,16 +14,11 @@ import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
+import com.app.gps.GpsService
 
 class MainActivity : ReactActivity() {
 
     private var waitingForBackgroundPermission = false
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        // Passar null garante estabilidade com react-native-screens / reanimated em recreações da Activity
-        super.onCreate(null)
-        requestLocationPermission()
-    }
 
     private fun requestLocationPermission() {
         val fineGranted = ContextCompat.checkSelfPermission(
@@ -127,6 +122,17 @@ class MainActivity : ReactActivity() {
             .setCancelable(false)
             .show()
     }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(null)
+        requestLocationPermission()
+
+        val intent = Intent(this, GpsService::class.java)
+        ContextCompat.startForegroundService(this, intent)
+
+
+    }
+
 
     override fun onResume() {
         super.onResume()

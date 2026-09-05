@@ -40,11 +40,11 @@
         </activity>
 
         <!--
-          SERVIÇO DE GPS (Localizado no pacote com.app.gps.Gps)
+          SERVIÇO DE GPS (Localizado no pacote com.app.gps.GpsService)
           O android:name=".gps.Gps" aponta diretamente para o seu Gps.kt
         -->
         <service
-            android:name=".gps.Gps"
+            android:name=".gps.GpsService"
             android:foregroundServiceType="location"
             android:exported="false" />
 

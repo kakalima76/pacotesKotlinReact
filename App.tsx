@@ -29,23 +29,12 @@ function App() {
 }
 
 function AppContent() {
-  const [resultado, setResultado] = useState<number | null>(null);
 
-
-  useEffect(() => {
-  NativeModules.PersonsFunctions.somar(200, 400)
-    .then((valor: number) => {
-      setResultado(valor);
-    })
-    .catch((erro: unknown) => {
-      console.error('Erro ao chamar Kotlin:', erro);
-    });
-}, []);
 
   return (
     <View style={styles.container}>
       <Text style={styles.text}>
-        Resultado : {resultado}
+        Resultado :
       </Text>
     </View>
   );
