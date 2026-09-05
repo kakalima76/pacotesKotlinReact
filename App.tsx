@@ -19,7 +19,19 @@ const { GpsService } = NativeModules;
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
-    const [location, setLocation] = useState<{
+
+
+
+  return (
+    <SafeAreaProvider>
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <AppContent />
+    </SafeAreaProvider>
+  );
+}
+
+function AppContent() {
+const [location, setLocation] = useState<{
       latitude: number;
       longitude: number;
     } | null>(null);
@@ -41,24 +53,13 @@ function App() {
     return () => {
       subscription.remove();
     };
-  }, []);
-
-
-  return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
-}
-
-function AppContent() {
+  }, [location]);
 
 
   return (
     <View style={styles.container}>
       <Text style={styles.text}>
-        Resultado :
+       {location?.latitude}
       </Text>
     </View>
   );
