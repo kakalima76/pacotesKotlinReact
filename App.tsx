@@ -1,6 +1,7 @@
-import "./global.css"
+//@ts-ignore
+import './global.css';
 import { NewAppScreen } from '@react-native/new-app-screen';
-import { useEffect , useState} from 'react';
+import { useEffect, useState } from 'react';
 import {
   NativeModules,
   NativeEventEmitter,
@@ -9,12 +10,12 @@ import {
   useColorScheme,
   View,
   Text,
-
 } from 'react-native';
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
+import { GpsTelemetry } from './src/interfaces';
 
 const { GpsService } = NativeModules;
 
@@ -30,37 +31,27 @@ function App() {
 }
 
 function AppContent() {
-const [location, setLocation] = useState();
+  const [location, setLocation] = useState<GpsTelemetry | any>();
 
   useEffect(() => {
     const gpsEmitter = new NativeEventEmitter(GpsService);
 
-    const subscription = gpsEmitter.addListener(
-      'gpsLocation',
-      (location) => {
-          console.log(location);
-        setLocation({
-          latitude: location.latitude,
-          longitude: location.longitude,
-        });
-      }
-    );
+    const subscription = gpsEmitter.addListener('gpsLocation', location => {
+      console.log(location);
+      setLocation(location);
+    });
 
     return () => {
       subscription.remove();
     };
   }, []);
 
-
   return (
     <View style={styles.container}>
-      <Text className="text-red-500 text-3xl">
-       {location?.latitude}
-      </Text>
+      <Text className="text-red-500 text-3xl">{location?.latitude}</Text>
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -72,6 +63,5 @@ const styles = StyleSheet.create({
     fontSize: 30,
   },
 });
-
 
 export default App;
