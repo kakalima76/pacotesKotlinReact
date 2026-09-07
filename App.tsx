@@ -1,67 +1,13 @@
-//@ts-ignore
-import './global.css';
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { useEffect, useState } from 'react';
-import {
-  NativeModules,
-  NativeEventEmitter,
-  StatusBar,
-  StyleSheet,
-  useColorScheme,
-  View,
-  Text,
-} from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
-import { GpsTelemetry } from './src/interfaces';
-
-const { GpsService } = NativeModules;
+import React from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { MainStack } from './src/router';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+      <MainStack />
     </SafeAreaProvider>
   );
 }
-
-function AppContent() {
-  const [location, setLocation] = useState<GpsTelemetry | any>();
-
-  useEffect(() => {
-    const gpsEmitter = new NativeEventEmitter(GpsService);
-
-    const subscription = gpsEmitter.addListener('gpsLocation', location => {
-      console.log(location);
-      setLocation(location);
-    });
-
-    return () => {
-      subscription.remove();
-    };
-  }, []);
-
-  return (
-    <View style={styles.container}>
-      <Text className="text-red-500 text-3xl">{location?.latitude}</Text>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 30,
-  },
-});
 
 export default App;
