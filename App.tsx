@@ -1,12 +1,15 @@
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { MainStack } from './src/router';
+import { MainProvider } from './src/contexts';
 
 function App() {
   return (
-    <SafeAreaProvider>
-      <MainStack />
-    </SafeAreaProvider>
+    <MainProvider>
+      <SafeAreaProvider>
+        <MainStack />
+      </SafeAreaProvider>
+    </MainProvider>
   );
 }
 
