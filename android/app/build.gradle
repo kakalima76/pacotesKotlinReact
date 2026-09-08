@@ -2,10 +2,12 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+
 react {
     autolinkLibrariesWithApp()
     nodeExecutableAndArgs = ["/opt/homebrew/bin/node"]
 }
+apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
 def enableProguardInReleaseBuilds = false
 

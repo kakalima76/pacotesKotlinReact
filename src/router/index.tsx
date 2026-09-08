@@ -3,22 +3,14 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, Text } from 'react-native';
 import { LoginScreen } from '../screens/login';
-import { HomeScree } from '../screens/home';
+import { HomeScreen } from '../screens/home';
 
 const Stack = createNativeStackNavigator();
-
-function TestScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>STACK FUNCIONANDO</Text>
-    </View>
-  );
-}
 
 export function MainStack() {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator initialRouteName="Login">
         <Stack.Screen
           name="Login"
           component={LoginScreen}
@@ -29,7 +21,7 @@ export function MainStack() {
 
         <Stack.Screen
           name="Home"
-          component={HomeScree}
+          component={HomeScreen}
           options={{
             headerShown: false,
           }}

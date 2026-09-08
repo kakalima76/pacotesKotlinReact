@@ -1,15 +1,13 @@
-import React from 'react';
-import { Text, View } from 'react-native';
-import { useMainContext } from '../../contexts';
+import Mapbox from '@rnmapbox/maps';
+import { View } from 'react-native';
+import { MAPBOX_ACCESS_TOKEN } from '../../config/mapbox';
 
-export function HomeScree() {
-  const { location } = useMainContext();
+Mapbox.setAccessToken(MAPBOX_ACCESS_TOKEN);
 
+export function HomeScreen() {
   return (
-    <View className="flex-1 items-center justify-center">
-      <Text className="text-3xl bg-red-600 p-4 rounded-full text-white">
-        {location?.latitude}
-      </Text>
+    <View className="flex-1">
+      <Mapbox.MapView style={{ flex: 1 }} />
     </View>
   );
 }
