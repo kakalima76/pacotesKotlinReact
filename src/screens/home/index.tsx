@@ -2,6 +2,9 @@ import Mapbox from '@rnmapbox/maps';
 import { Image, View } from 'react-native';
 import { MAPBOX_ACCESS_TOKEN } from '../../config/mapbox';
 import { useMainContext } from '../../contexts';
+import { NativeModules } from 'react-native';
+
+const { Navigation } = NativeModules;
 
 Mapbox.setAccessToken(MAPBOX_ACCESS_TOKEN);
 

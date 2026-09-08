@@ -25,7 +25,10 @@ export function LoginScreen() {
           secureTextEntry
         />
 
-        <Button title="Entrar" onPress={() => navigation.navigate('Home')} />
+        <Button
+          title="Entrar"
+          onPress={() => navigation.navigate('Navigation')}
+        />
       </View>
     </View>
   );
