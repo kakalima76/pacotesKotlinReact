@@ -23,4 +23,21 @@ class NavigationModule(
             navigationService.start()
         }
     }
+
+    @ReactMethod
+    fun setRoute(
+        originLatitude: Double,
+        originLongitude: Double,
+        destinationLatitude: Double,
+        destinationLongitude: Double
+    ) {
+        Handler(Looper.getMainLooper()).post {
+            navigationService.setRoute(
+                originLatitude,
+                originLongitude,
+                destinationLatitude,
+                destinationLongitude
+            )
+        }
+    }
 }

@@ -17,6 +17,12 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import com.app.navigation.map.NavigationMapViewManager
+import com.mapbox.navigation.base.route.NavigationRoute
+import com.mapbox.navigation.base.route.NavigationRouterCallback
+import com.mapbox.navigation.base.route.RouterFailure
+import com.mapbox.navigation.base.route.RouterOrigin
+import com.mapbox.api.directions.v5.models.RouteOptions
+import com.mapbox.geojson.Point
 
 class NavigationService(
     private val context: Context
@@ -191,5 +197,109 @@ class NavigationService(
                 locationMatcherResult.keyPoints
             )
         }
+    }
+
+    fun setRoute(
+        originLatitude: Double,
+        originLongitude: Double,
+        destinationLatitude: Double,
+        destinationLongitude: Double
+    ) {
+
+        val navigation = this.navigation
+
+        if (navigation == null) {
+            Log.e(
+                "NavigationService",
+                "Navigation não inicializado"
+            )
+            return
+        }
+
+        val origin = Point.fromLngLat(
+            originLongitude,
+            originLatitude
+        )
+
+        val destination = Point.fromLngLat(
+            destinationLongitude,
+            destinationLatitude
+        )
+
+        val routeOptions =
+            RouteOptions.builder()
+                .coordinatesList(
+                    listOf(
+                        origin,
+                        destination
+                    )
+                )
+                .profile("driving")
+                .steps(true)
+                .build()
+
+        navigation.requestRoutes(
+            routeOptions,
+            object : NavigationRouterCallback {
+
+                override fun onRoutesReady(
+                    routes: List<NavigationRoute>,
+                    routerOrigin: String
+                ) {
+
+                    Log.d(
+                        "NavigationService",
+                        "ROTA CALCULADA: ${routes.size}"
+                    )
+
+                    navigation.setNavigationRoutes(
+                        routes
+                    )
+
+                    Log.d(
+                        "NavigationService",
+                        "ROTA DEFINIDA NO NAVIGATION"
+                    )
+                }
+
+                override fun onFailure(
+                    reasons: List<RouterFailure>,
+                    routeOptions: RouteOptions
+                ) {
+                    Log.e(
+                        "NavigationRoute",
+                        "FALHA COMPLETA: $reasons"
+                    )
+
+                    reasons.forEach { reason ->
+                        Log.e(
+                            "NavigationRoute",
+                            "type=${reason.type}"
+                        )
+
+                        Log.e(
+                            "NavigationRoute",
+                            "message=${reason.message}"
+                        )
+
+                        Log.e(
+                            "NavigationRoute",
+                            "url=${reason.url}"
+                        )
+                    }
+                }
+
+                override fun onCanceled(
+                    routeOptions: RouteOptions,
+                    routerOrigin: String
+                ) {
+
+                    Log.d(
+                        "NavigationService",
+                        "CÁLCULO DA ROTA CANCELADO"
+                    )
+                }
+            }
+        )
     }
 }
