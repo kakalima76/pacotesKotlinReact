@@ -16,6 +16,7 @@ import com.mapbox.navigation.core.trip.session.LocationObserver
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+import com.app.navigation.map.NavigationMapViewManager
 
 class NavigationService(
     private val context: Context
@@ -47,6 +48,11 @@ class NavigationService(
         )
 
         gpsLocationProvider.updateLocation(location)
+
+        NavigationMapViewManager.updateLocation(
+            location.latitude,
+            location.longitude
+        )
     }
 
     fun initialize() {
