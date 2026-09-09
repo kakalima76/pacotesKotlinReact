@@ -18,6 +18,22 @@ class NavigationMapViewManager :
                 longitude
             )
         }
+
+        fun updateNavigationLocation(
+            location: com.mapbox.common.location.Location,
+            keyPoints: List<com.mapbox.common.location.Location>
+        ) {
+            android.util.Log.d(
+                "NavigationMapView",
+                "Enviando MATCHED para NavigationLocationProvider: " +
+                        "${location.latitude}, ${location.longitude}"
+            )
+
+            instance?.view?.navigationLocationProvider?.changePosition(
+                location = location,
+                keyPoints = keyPoints
+            )
+        }
     }
 
     private var view: NavigationMapView? = null

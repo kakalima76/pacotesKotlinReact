@@ -188,6 +188,11 @@ class NavigationService(
                 "NavigationService",
                 "MAPBOX recebeu localização MATCHED"
             )
+
+            NavigationMapViewManager.updateNavigationLocation(
+                locationMatcherResult.enhancedLocation,
+                locationMatcherResult.keyPoints
+            )
         }
     }
 }
