@@ -33,6 +33,21 @@ class NavigationMapViewManager :
                 location = location,
                 keyPoints = keyPoints
             )
+
+            android.util.Log.d(
+                "NavigationMapView",
+                "ANTES de chamar updateNavigationLocation()"
+            )
+
+            instance?.view?.updateNavigationLocation(
+                location,
+                keyPoints
+            )
+
+            android.util.Log.d(
+                "NavigationMapView",
+                "DEPOIS de chamar updateNavigationLocation()"
+            )
         }
     }
 

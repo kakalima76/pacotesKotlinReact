@@ -49,10 +49,7 @@ class NavigationService(
 
         gpsLocationProvider.updateLocation(location)
 
-        NavigationMapViewManager.updateLocation(
-            location.latitude,
-            location.longitude
-        )
+
     }
 
     fun initialize() {
