@@ -5,12 +5,17 @@ import android.location.Location
 import android.util.Log
 
 import com.app.gps.GpsLocationBus
+import com.mapbox.bindgen.ExpectedFactory
 import com.mapbox.common.location.DeviceLocationProviderFactory
 import com.mapbox.navigation.base.options.LocationOptions
 import com.mapbox.navigation.base.options.NavigationOptions
 import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp
-import com.mapbox.bindgen.ExpectedFactory
+import com.mapbox.navigation.core.trip.session.LocationMatcherResult
+import com.mapbox.navigation.core.trip.session.LocationObserver
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 
 class NavigationService(
     private val context: Context
@@ -126,5 +131,57 @@ class NavigationService(
             "NavigationService",
             "Navigation pronto para uso"
         )
+
+        navigation.registerLocationObserver(locationObserver)
+
+        Log.d(
+            "NavigationService",
+            "LocationObserver registrado"
+        )
+
+        if (
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            navigation.startTripSession()
+
+            Log.d(
+                "NavigationService",
+                "Trip Session iniciada"
+            )
+        } else {
+            Log.e(
+                "NavigationService",
+                "Permissão de localização não concedida"
+            )
+        }
+    }
+
+    private val locationObserver = object : LocationObserver {
+
+        override fun onNewRawLocation(
+            rawLocation: com.mapbox.common.location.Location
+        ) {
+            Log.d(
+                "NavigationService",
+                "MAPBOX recebeu localização RAW: " +
+                        "${rawLocation.latitude}, ${rawLocation.longitude}"
+            )
+        }
+
+        override fun onNewLocationMatcherResult(
+            locationMatcherResult: LocationMatcherResult
+        ) {
+            Log.d(
+                "NavigationService",
+                "MAPBOX recebeu localização MATCHED"
+            )
+        }
     }
 }
