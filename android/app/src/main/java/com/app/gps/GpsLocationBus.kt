@@ -1,6 +1,8 @@
 package com.app.gps
 
 import android.location.Location
+import android.util.Log
+
 
 object GpsLocationBus {
 
@@ -16,7 +18,19 @@ object GpsLocationBus {
     }
 
     fun emit(location: Location) {
-        listeners.forEach { listener ->
+
+        Log.d(
+            "GpsLocationBus",
+            "emit() chamado — listeners: ${listeners.size}"
+        )
+
+        listeners.forEachIndexed { index, listener ->
+
+            Log.d(
+                "GpsLocationBus",
+                "Executando listener $index"
+            )
+
             listener(location)
         }
     }

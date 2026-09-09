@@ -20,6 +20,7 @@ class NavigationModule(
     fun startNavigation() {
         Handler(Looper.getMainLooper()).post {
             navigationService.initialize()
+            navigationService.start()
         }
     }
 }

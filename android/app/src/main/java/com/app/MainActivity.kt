@@ -15,6 +15,7 @@ import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.app.gps.GpsService
+import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp
 
 class MainActivity : ReactActivity() {
 
@@ -125,12 +126,13 @@ class MainActivity : ReactActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(null)
+
+        MapboxNavigationApp.attach(this)
+
         requestLocationPermission()
 
         val intent = Intent(this, GpsService::class.java)
         ContextCompat.startForegroundService(this, intent)
-
-
     }
 
 
