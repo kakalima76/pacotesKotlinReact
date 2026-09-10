@@ -256,6 +256,10 @@ class NavigationService(
                         routes
                     )
 
+                    NavigationMapViewManager.updateRoute(
+                        routes
+                    )
+
                     Log.d(
                         "NavigationService",
                         "ROTA DEFINIDA NO NAVIGATION"

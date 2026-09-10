@@ -54,6 +54,7 @@ dependencies {
     implementation("com.facebook.react:react-android")
     implementation("com.google.android.gms:play-services-location:21.4.0")
     implementation "com.mapbox.navigationcore:android-ndk27:3.31.0-rc.1"
+    implementation "com.mapbox.navigationcore:ui-components-ndk27:3.31.0-rc.1"
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

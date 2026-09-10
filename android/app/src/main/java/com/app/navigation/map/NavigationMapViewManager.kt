@@ -49,6 +49,22 @@ class NavigationMapViewManager :
                 "DEPOIS de chamar updateNavigationLocation()"
             )
         }
+
+        fun updateRoute(
+            routes: List<com.mapbox.navigation.base.route.NavigationRoute>
+        ) {
+            android.util.Log.d(
+                "NavigationMapView",
+                "updateRoute() MANAGER: ${routes.size}"
+            )
+
+            instance?.view?.updateRoute(routes)
+
+            android.util.Log.d(
+                "NavigationMapView",
+                "updateRoute() MANAGER FINALIZADO"
+            )
+        }
     }
 
     private var view: NavigationMapView? = null

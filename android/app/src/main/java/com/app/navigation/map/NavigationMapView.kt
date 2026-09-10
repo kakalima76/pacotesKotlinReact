@@ -9,6 +9,14 @@ import com.mapbox.navigation.ui.maps.camera.NavigationCamera
 import com.mapbox.navigation.ui.maps.camera.data.MapboxNavigationViewportDataSource
 import com.mapbox.maps.plugin.animation.camera
 import com.mapbox.maps.EdgeInsets
+import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowApi
+import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowView
+import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi
+import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView
+import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineApiOptions
+import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineViewOptions
+
+
 
 class NavigationMapView(
     context: Context
@@ -82,4 +90,39 @@ class NavigationMapView(
                 .build()
         )
     }
+
+    fun updateRoute(
+        routes: List<com.mapbox.navigation.base.route.NavigationRoute>
+    ) {
+        android.util.Log.d(
+            "NavigationMapView",
+            "updateRoute() VIEW: ${routes.size}"
+        )
+
+        routeLineApi.setNavigationRoutes(routes) { result ->
+            mapboxMap.getStyle { style ->
+                routeLineView.renderRouteDrawData(style, result)
+
+                android.util.Log.d(
+                    "NavigationMapView",
+                    "Route Line renderizada"
+                )
+            }
+        }
+    }
+
+    private val routeLineApi by lazy {
+        MapboxRouteLineApi(
+            MapboxRouteLineApiOptions.Builder().build()
+        )
+    }
+
+    private val routeLineView by lazy {
+        MapboxRouteLineView(
+            MapboxRouteLineViewOptions.Builder(context).build()
+        )
+    }
+
+
+
 }

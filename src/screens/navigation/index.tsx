@@ -41,8 +41,8 @@ export function NavigationScreen() {
             Navigation?.setRoute?.(
               -22.9647162,
               -42.9292636,
-              -22.96446,
-              -42.9283527,
+              -22.963879,
+              -42.995022,
             );
           }}
         />
