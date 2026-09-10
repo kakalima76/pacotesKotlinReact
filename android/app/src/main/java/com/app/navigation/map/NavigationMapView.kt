@@ -8,6 +8,7 @@ import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.navigation.ui.maps.camera.NavigationCamera
 import com.mapbox.navigation.ui.maps.camera.data.MapboxNavigationViewportDataSource
 import com.mapbox.maps.plugin.animation.camera
+import com.mapbox.maps.EdgeInsets
 
 class NavigationMapView(
     context: Context
@@ -28,6 +29,13 @@ class NavigationMapView(
     private var cameraFollowing = false
 
     init {
+
+        viewportDataSource.followingPadding = EdgeInsets(
+            100.0,
+            50.0,
+            400.0,
+            50.0
+        )
         mapboxMap.loadStyleUri(
             "mapbox://styles/mapbox/standard"
         ) {
@@ -41,8 +49,6 @@ class NavigationMapView(
 
         }
     }
-
-
 
     fun updateNavigationLocation(
         location: com.mapbox.common.location.Location,

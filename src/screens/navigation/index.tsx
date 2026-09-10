@@ -5,14 +5,8 @@ import {
   requireNativeComponent,
 } from 'react-native';
 import { Button } from '../../components/button';
+import NavigationMapView from '../../config/NavigationMapView';
 const { Navigation } = NativeModules;
-
-interface NavigationMapViewProps {
-  style?: ViewStyle;
-}
-
-const NavigationMapView =
-  requireNativeComponent<NavigationMapViewProps>('NavigationMapView');
 
 export function NavigationScreen() {
   console.log('Navigation:', Navigation);
