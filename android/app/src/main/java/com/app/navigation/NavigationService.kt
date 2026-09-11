@@ -217,13 +217,13 @@ class NavigationService(
                         routes
                     )
 
+                    navigation.unregisterLocationObserver(locationObserver)
+                    navigation.unregisterRoutesObserver(routesObserver)
+                    navigation.unregisterRouteProgressObserver(routeProgressObserver)
+
                     navigation.registerLocationObserver(locationObserver)
-
                     navigation.registerRoutesObserver(routesObserver)
-
-                    navigation.registerRouteProgressObserver(
-                        routeProgressObserver
-                    )
+                    navigation.registerRouteProgressObserver(routeProgressObserver)
 
                     Log.d(
                         "NavigationService",
@@ -328,6 +328,14 @@ class NavigationService(
                         "Rota",
                         "ROTA CONCLUÍDA"
                     )
+
+                    navigation?.unregisterRouteProgressObserver(
+                        this
+                    )
+
+                    navigation?.stopTripSession()
+
+                    return
                 }
 
                 val maneuvers =
