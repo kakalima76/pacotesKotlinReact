@@ -16,11 +16,11 @@ import com.mapbox.navigation.core.trip.session.LocationObserver
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+import com.app.navigation.dto.NavigationManeuver
 import com.app.navigation.map.NavigationMapViewManager
 import com.mapbox.navigation.base.route.NavigationRoute
 import com.mapbox.navigation.base.route.NavigationRouterCallback
 import com.mapbox.navigation.base.route.RouterFailure
-import com.mapbox.navigation.base.route.RouterOrigin
 import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.Point
 import com.mapbox.navigation.core.directions.session.RoutesObserver
@@ -31,10 +31,16 @@ import com.mapbox.navigation.core.formatter.MapboxDistanceFormatter
 import com.mapbox.navigation.base.formatter.DistanceFormatterOptions
 import com.mapbox.navigation.tripdata.maneuver.api.MapboxManeuverApi
 import com.mapbox.navigation.base.trip.model.RouteProgressState
+import com.mapbox.bindgen.Expected
+import com.mapbox.navigation.tripdata.maneuver.model.Maneuver
+import com.mapbox.navigation.tripdata.maneuver.model.ManeuverError
+import com.app.navigation.dto.NavigationTripProgress
 
 
 class NavigationService(
-    private val context: Context
+    private val context: Context,
+    private val onManeuversChanged: (List<NavigationManeuver>) -> Unit,
+    private val onTripProgressChanged: (NavigationTripProgress) -> Unit
 ) {
 
     /**
@@ -322,6 +328,24 @@ class NavigationService(
                     "PROGRESSO: ${routeProgress.currentState}"
                 )
 
+                val tripProgress = NavigationTripProgress(
+                    distanceRemaining = routeProgress.distanceRemaining.toDouble(),
+                    durationRemaining = routeProgress.durationRemaining
+                )
+
+                Log.d(
+                    "Rota",
+                    "DISTÂNCIA RESTANTE: ${tripProgress.distanceRemaining}"
+                )
+
+                Log.d(
+                    "Rota",
+                    "TEMPO RESTANTE: ${tripProgress.durationRemaining}"
+                )
+
+                onTripProgressChanged(tripProgress)
+
+
                 if (routeProgress.currentState == RouteProgressState.COMPLETE) {
 
                     Log.d(
@@ -357,11 +381,29 @@ class NavigationService(
                                 "Rota",
                                 "MANOBRAS: ${maneuverList.size}"
                             )
+
+                            val navigationManeuvers =
+                                maneuverList.map { maneuver ->
+
+                                    NavigationManeuver(
+                                        id = maneuver.primary.id,
+                                        text = maneuver.primary.text,
+                                        type = maneuver.primary.type,
+                                        modifier = maneuver.primary.modifier,
+                                        distanceRemaining = maneuver.stepDistance.distanceRemaining,
+                                        totalDistance = maneuver.stepDistance.totalDistance,
+                                        latitude = maneuver.maneuverPoint.latitude(),
+                                        longitude = maneuver.maneuverPoint.longitude()
+                                    )
+                                }
+                            onManeuversChanged(navigationManeuvers)
                         }
                     }
                 )
             }
         }
+
+
     private val maneuverApi by lazy {
         MapboxManeuverApi(
             MapboxDistanceFormatter(
@@ -371,4 +413,44 @@ class NavigationService(
             )
         )
     }
+
+    private fun extractManeuvers(
+        maneuvers: Expected<ManeuverError, List<Maneuver>>
+    ): List<NavigationManeuver> {
+
+        return maneuvers.fold(
+            { error ->
+                Log.e(
+                    "NavigationService",
+                    "Erro ao extrair manobras: ${error.errorMessage}"
+                )
+
+                emptyList()
+            },
+            { maneuverList ->
+
+                maneuverList.map { maneuver ->
+
+                    NavigationManeuver(
+                        id = maneuver.primary.id,
+                        text = maneuver.primary.text,
+                        type = maneuver.primary.type,
+                        modifier = maneuver.primary.modifier,
+                        distanceRemaining =
+                            maneuver.stepDistance.distanceRemaining,
+                        totalDistance =
+                            maneuver.stepDistance.totalDistance,
+                        latitude =
+                            maneuver.maneuverPoint.latitude(),
+                        longitude =
+                            maneuver.maneuverPoint.longitude()
+                    )
+                }
+            }
+        )
+    }
+
+
+
+
 }
