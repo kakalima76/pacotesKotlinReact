@@ -23,7 +23,8 @@ import com.mapbox.navigation.base.route.RouterFailure
 import com.mapbox.navigation.base.route.RouterOrigin
 import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.Point
-
+import com.mapbox.navigation.core.directions.session.RoutesObserver
+import com.mapbox.navigation.core.directions.session.RoutesUpdatedResult
 class NavigationService(
     private val context: Context
 ) {
@@ -143,9 +144,11 @@ class NavigationService(
 
         navigation.registerLocationObserver(locationObserver)
 
+        navigation.registerRoutesObserver(routesObserver)
+
         Log.d(
             "NavigationService",
-            "LocationObserver registrado"
+            "LocationObserver e RoutesObserver registrados"
         )
 
         if (
@@ -305,5 +308,21 @@ class NavigationService(
                 }
             }
         )
+    }
+
+    private val routesObserver = object : RoutesObserver {
+
+        override fun onRoutesChanged(
+            result: RoutesUpdatedResult
+        ) {
+            Log.d(
+                "Rota",
+                "ROTAS ATUALIZADAS: ${result.navigationRoutes.size}"
+            )
+
+            NavigationMapViewManager.updateRoute(
+                result.navigationRoutes
+            )
+        }
     }
 }

@@ -39,10 +39,10 @@ export function NavigationScreen() {
           title="Testar Rota"
           onPress={() => {
             Navigation?.setRoute?.(
-              -22.9647162,
-              -42.9292636,
-              -22.963879,
-              -42.995022,
+              -22.967161,
+              -42.974734,
+              -22.956268671822837,
+              -42.98874803674782,
             );
           }}
         />
