@@ -10,7 +10,18 @@ object GpsLocationBus {
         mutableSetOf<(Location) -> Unit>()
 
     fun subscribe(listener: (Location) -> Unit) {
+
+        Log.d(
+            "GpsLocationBus",
+            "SUBSCRIBE: ${listener}"
+        )
+
         listeners.add(listener)
+
+        Log.d(
+            "GpsLocationBus",
+            "TOTAL LISTENERS: ${listeners.size}"
+        )
     }
 
     fun unsubscribe(listener: (Location) -> Unit) {
@@ -28,10 +39,27 @@ object GpsLocationBus {
 
             Log.d(
                 "GpsLocationBus",
-                "Executando listener $index"
+                "ANTES listener $index — " +
+                        "${location.latitude}, ${location.longitude}"
             )
 
-            listener(location)
+            try {
+
+                listener(location)
+
+                Log.d(
+                    "GpsLocationBus",
+                    "DEPOIS listener $index"
+                )
+
+            } catch (e: Exception) {
+
+                Log.e(
+                    "GpsLocationBus",
+                    "ERRO ao executar listener $index",
+                    e
+                )
+            }
         }
     }
 }

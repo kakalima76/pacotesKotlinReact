@@ -12,17 +12,19 @@ class NavigationModule(
 
     private val navigationService = NavigationService(reactContext)
 
+
+    @ReactMethod()
+    fun initializeNavigation() {
+        Handler(Looper.getMainLooper()).post {
+            navigationService.initialize()
+        }
+    }
+
     override fun getName(): String {
         return "Navigation"
     }
 
-    @ReactMethod
-    fun startNavigation() {
-        Handler(Looper.getMainLooper()).post {
-            navigationService.initialize()
-            navigationService.start()
-        }
-    }
+
 
     @ReactMethod
     fun setRoute(

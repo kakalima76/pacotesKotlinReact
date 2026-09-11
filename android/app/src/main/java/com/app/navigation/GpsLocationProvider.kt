@@ -9,6 +9,7 @@ import com.mapbox.common.location.DeviceLocationProvider
 import com.mapbox.common.location.GetLocationCallback
 import com.mapbox.common.location.toCommonLocation
 import android.util.Log
+import com.app.navigation.map.NavigationMapViewManager
 
 
 class GpsLocationProvider : BaseLocationProvider(), DeviceLocationProvider {
@@ -18,6 +19,15 @@ class GpsLocationProvider : BaseLocationProvider(), DeviceLocationProvider {
     fun updateLocation(location: Location) {
 
         lastLocation = location
+
+        NavigationMapViewManager.updatePuckLocation(
+            location.toCommonLocation()
+        )
+
+        NavigationMapViewManager.updateLocation(
+            location.latitude,
+            location.longitude
+        )
 
         Log.d(
             "GpsLocationProvider",

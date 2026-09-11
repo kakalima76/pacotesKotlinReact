@@ -6,11 +6,13 @@ import {
 } from 'react-native';
 import { Button } from '../../components/button';
 import NavigationMapView from '../../config/NavigationMapView';
+import { useEffect } from 'react';
 const { Navigation } = NativeModules;
 
 export function NavigationScreen() {
-  console.log('Navigation:', Navigation);
-  console.log('startNavigation:', Navigation?.startNavigation);
+  useEffect(() => {
+    Navigation.initializeNavigation();
+  }, []);
 
   return (
     <View className="flex-1">
@@ -26,23 +28,13 @@ export function NavigationScreen() {
 
       <View className="absolute bottom-10 left-0 right-0 items-center">
         <Button
-          title="Iniciar Navigation"
-          onPress={() => {
-            console.log('Navigation:', Navigation);
-            console.log('startNavigation:', Navigation?.startNavigation);
-
-            Navigation?.startNavigation?.();
-          }}
-        />
-
-        <Button
           title="Testar Rota"
           onPress={() => {
             Navigation?.setRoute?.(
               -22.967161,
               -42.974734,
-              -22.956268671822837,
-              -42.98874803674782,
+              -22.94911846379087,
+              -42.98114469339183,
             );
           }}
         />

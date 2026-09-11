@@ -13,9 +13,38 @@ class NavigationMapViewManager :
             latitude: Double,
             longitude: Double
         ) {
+            android.util.Log.d(
+                "NavigationMapView",
+                "UPDATE CAMERA: $latitude, $longitude"
+            )
+
+            android.util.Log.d(
+                "NavigationMapView",
+                "VIEW EXISTE: ${instance?.view != null}"
+            )
+
             instance?.view?.updateLocation(
                 latitude,
                 longitude
+            )
+        }
+
+        fun updatePuckLocation(
+            location: com.mapbox.common.location.Location
+        ) {
+            android.util.Log.d(
+                "NavigationMapView",
+                "UPDATE PUCK: ${location.latitude}, ${location.longitude}"
+            )
+
+            android.util.Log.d(
+                "NavigationMapView",
+                "VIEW EXISTE PUCK: ${instance?.view != null}"
+            )
+
+            instance?.view?.navigationLocationProvider?.changePosition(
+                location = location,
+                keyPoints = emptyList()
             )
         }
 

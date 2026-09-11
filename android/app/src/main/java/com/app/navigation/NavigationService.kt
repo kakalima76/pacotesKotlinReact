@@ -25,6 +25,14 @@ import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.geojson.Point
 import com.mapbox.navigation.core.directions.session.RoutesObserver
 import com.mapbox.navigation.core.directions.session.RoutesUpdatedResult
+import com.mapbox.navigation.core.trip.session.RouteProgressObserver
+import com.mapbox.navigation.base.trip.model.RouteProgress
+import com.mapbox.navigation.core.formatter.MapboxDistanceFormatter
+import com.mapbox.navigation.base.formatter.DistanceFormatterOptions
+import com.mapbox.navigation.tripdata.maneuver.api.MapboxManeuverApi
+import com.mapbox.navigation.base.trip.model.RouteProgressState
+
+
 class NavigationService(
     private val context: Context
 ) {
@@ -118,63 +126,6 @@ class NavigationService(
         )
     }
 
-    fun start() {
-
-        Log.d(
-            "NavigationService",
-            "start() chamado"
-        )
-
-        val navigation = this.navigation
-
-        if (navigation == null) {
-
-            Log.e(
-                "NavigationService",
-                "Navigation não inicializado"
-            )
-
-            return
-        }
-
-        Log.d(
-            "NavigationService",
-            "Navigation pronto para uso"
-        )
-
-        navigation.registerLocationObserver(locationObserver)
-
-        navigation.registerRoutesObserver(routesObserver)
-
-        Log.d(
-            "NavigationService",
-            "LocationObserver e RoutesObserver registrados"
-        )
-
-        if (
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            navigation.startTripSession()
-
-            Log.d(
-                "NavigationService",
-                "Trip Session iniciada"
-            )
-        } else {
-            Log.e(
-                "NavigationService",
-                "Permissão de localização não concedida"
-            )
-        }
-    }
-
     private val locationObserver = object : LocationObserver {
 
         override fun onNewRawLocation(
@@ -239,6 +190,7 @@ class NavigationService(
                 )
                 .profile("driving")
                 .steps(true)
+                .bannerInstructions(true)
                 .build()
 
         navigation.requestRoutes(
@@ -251,13 +203,45 @@ class NavigationService(
                 ) {
 
                     Log.d(
-                        "NavigationService",
+                        "Rota",
                         "ROTA CALCULADA: ${routes.size}"
+                    )
+
+                    Log.d(
+                        "Rota",
+                        "BANNER INSTRUCTIONS: " +
+                                "${routes.firstOrNull()?.directionsRoute?.legs()?.firstOrNull()?.steps()?.size}"
                     )
 
                     navigation.setNavigationRoutes(
                         routes
                     )
+
+                    navigation.registerLocationObserver(locationObserver)
+
+                    navigation.registerRoutesObserver(routesObserver)
+
+                    navigation.registerRouteProgressObserver(
+                        routeProgressObserver
+                    )
+
+                    Log.d(
+                        "NavigationService",
+                        "LocationObserver e RoutesObserver e registerRouteProgressObserver registrados"
+                    )
+
+                    if (
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        ) == PackageManager.PERMISSION_GRANTED ||
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        ) == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        navigation.startTripSession()
+                    }
 
                     NavigationMapViewManager.updateRoute(
                         routes
@@ -324,5 +308,59 @@ class NavigationService(
                 result.navigationRoutes
             )
         }
+    }
+
+    private val routeProgressObserver =
+        object : RouteProgressObserver {
+
+            override fun onRouteProgressChanged(
+                routeProgress: RouteProgress
+            ) {
+
+                Log.d(
+                    "Rota",
+                    "PROGRESSO: ${routeProgress.currentState}"
+                )
+
+                if (routeProgress.currentState == RouteProgressState.COMPLETE) {
+
+                    Log.d(
+                        "Rota",
+                        "ROTA CONCLUÍDA"
+                    )
+                }
+
+                val maneuvers =
+                    maneuverApi.getManeuvers(
+                        routeProgress
+                    )
+
+                maneuvers.fold(
+                    { error ->
+                        Log.e(
+                            "Rota",
+                            "ERRO MANOBRA: ${error.errorMessage}"
+                        )
+                    },
+                    {
+                        maneuvers.onValue { maneuverList ->
+
+                            Log.d(
+                                "Rota",
+                                "MANOBRAS: ${maneuverList.size}"
+                            )
+                        }
+                    }
+                )
+            }
+        }
+    private val maneuverApi by lazy {
+        MapboxManeuverApi(
+            MapboxDistanceFormatter(
+                DistanceFormatterOptions.Builder(
+                    context
+                ).build()
+            )
+        )
     }
 }
