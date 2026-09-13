@@ -16,45 +16,35 @@ import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineApiOptions
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineViewOptions
 
-
-
 class NavigationMapView(
     context: Context
 ) : MapView(context) {
-
     val navigationLocationProvider = NavigationLocationProvider()
-
     private val viewportDataSource =
         MapboxNavigationViewportDataSource(mapboxMap)
-
     private val navigationCamera =
         NavigationCamera(
             mapboxMap,
             camera,
             viewportDataSource
         )
+    internal var cameraFollowing = false
 
-    private var cameraFollowing = false
+    // ← ALTERAÇÃO: flag para saber se há navegação ativa
+    internal var navigationActive = false
 
     init {
-
         viewportDataSource.followingPadding = EdgeInsets(
-            100.0,
-            50.0,
-            400.0,
-            50.0
+            100.0, 50.0, 400.0, 50.0
         )
-        mapboxMap.loadStyleUri(
-            "mapbox://styles/mapbox/standard"
-        ) {
+        viewportDataSource.options.followingFrameOptions.zoomUpdatesAllowed = false
+        mapboxMap.loadStyleUri("mapbox://styles/mapbox/standard") {
             location.apply {
                 setLocationProvider(navigationLocationProvider)
                 locationPuck = createDefault2DPuck(withBearing = true)
                 puckBearingEnabled = true
                 enabled = true
             }
-
-
         }
     }
 
@@ -62,12 +52,8 @@ class NavigationMapView(
         location: com.mapbox.common.location.Location,
         keyPoints: List<com.mapbox.common.location.Location>
     ) {
-        viewportDataSource.onLocationChanged(
-            location
-        )
-
+        viewportDataSource.onLocationChanged(location)
         viewportDataSource.evaluate()
-
         if (!cameraFollowing) {
             navigationCamera.requestNavigationCameraToFollowing()
             cameraFollowing = true
@@ -78,6 +64,9 @@ class NavigationMapView(
         latitude: Double,
         longitude: Double
     ) {
+        // ← ALTERAÇÃO: não move a câmera se a navegação estiver ativa
+        if (navigationActive) return
+
         mapboxMap.setCamera(
             com.mapbox.maps.CameraOptions.Builder()
                 .center(
@@ -94,19 +83,9 @@ class NavigationMapView(
     fun updateRoute(
         routes: List<com.mapbox.navigation.base.route.NavigationRoute>
     ) {
-        android.util.Log.d(
-            "NavigationMapView",
-            "updateRoute() VIEW: ${routes.size}"
-        )
-
         routeLineApi.setNavigationRoutes(routes) { result ->
             mapboxMap.getStyle { style ->
                 routeLineView.renderRouteDrawData(style, result)
-
-                android.util.Log.d(
-                    "NavigationMapView",
-                    "Route Line renderizada"
-                )
             }
         }
     }
@@ -116,10 +95,17 @@ class NavigationMapView(
             MapboxRouteLineApiOptions.Builder().build()
         )
     }
-
     private val routeLineView by lazy {
         MapboxRouteLineView(
             MapboxRouteLineViewOptions.Builder(context).build()
+        )
+    }
+
+    fun setZoomLevel(zoom: Double) {
+        mapboxMap.setCamera(
+            com.mapbox.maps.CameraOptions.Builder()
+                .zoom(zoom)
+                .build()
         )
     }
 

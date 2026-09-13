@@ -13,10 +13,17 @@ export interface NavigationManeuver {
   text: string;
   type: string | null;
   modifier: string | null;
-  distanceRemaining: number;
+  secondaryText: string | null;
+  secondaryType: string | null;
+  secondaryModifier: string | null;
+  subText: string | null;
+  subType: string | null;
+  subModifier: string | null;
+  distanceRemaining: number | null;
   totalDistance: number;
   latitude: number;
   longitude: number;
+  nextRoadName: string | null; // ← campo que vem do Kotlin
 }
 
 export interface NavigationTripProgress {

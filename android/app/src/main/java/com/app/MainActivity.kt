@@ -18,20 +18,18 @@ import com.app.gps.GpsService
 import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp
 
 class MainActivity : ReactActivity() {
-
     private var waitingForBackgroundPermission = false
+    private var gpsServiceStarted = false  // ← ALTERAÇÃO: evita iniciar o service duas vezes
 
     private fun requestLocationPermission() {
         val fineGranted = ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
-
         val coarseGranted = ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
-
         if (!fineGranted && !coarseGranted) {
             ActivityCompat.requestPermissions(
                 this,
@@ -42,7 +40,8 @@ class MainActivity : ReactActivity() {
                 LOCATION_PERMISSION_REQUEST_CODE
             )
         } else {
-            requestBackgroundLocationPermission()
+            // ← ALTERAÇÃO: permissão já concedida, pode iniciar o service
+            onLocationPermissionGranted()
         }
     }
 
@@ -52,21 +51,30 @@ class MainActivity : ReactActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             val fineGranted = ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
-
             val coarseGranted = ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
-
             if (fineGranted || coarseGranted) {
-                requestBackgroundLocationPermission()
+                // ← ALTERAÇÃO: permissão concedida agora, inicia o service
+                onLocationPermissionGranted()
             }
+            // ← ALTERAÇÃO: se negou, não inicia o service (evita crash)
+        }
+    }
+
+    // ← ALTERAÇÃO: método centralizado que inicia o service uma única vez
+    private fun onLocationPermissionGranted() {
+        requestBackgroundLocationPermission()
+        if (!gpsServiceStarted) {
+            gpsServiceStarted = true
+            val intent = Intent(this, GpsService::class.java)
+            ContextCompat.startForegroundService(this, intent)
         }
     }
 
@@ -84,7 +92,6 @@ class MainActivity : ReactActivity() {
     private fun requestBackgroundLocationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !hasBackgroundLocationPermission()) {
             if (isFinishing || isDestroyed) return
-
             AlertDialog.Builder(this)
                 .setTitle("Localização em segundo plano")
                 .setMessage(
@@ -93,7 +100,6 @@ class MainActivity : ReactActivity() {
                             "para continuar usando o aplicativo."
                 )
                 .setNegativeButton("Agora não") { _, _ ->
-                    // Trata o cancelamento sem travar a navegação do usuário
                     waitingForBackgroundPermission = false
                 }
                 .setPositiveButton("Abrir configurações") { _, _ ->
@@ -110,7 +116,6 @@ class MainActivity : ReactActivity() {
 
     private fun showBackgroundPermissionRequiredMessage() {
         if (isFinishing || isDestroyed) return
-
         AlertDialog.Builder(this)
             .setTitle("Permissão necessária")
             .setMessage(
@@ -125,23 +130,16 @@ class MainActivity : ReactActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(null)
-
+        super.onCreate(savedInstanceState)  // ← ALTERAÇÃO: passar savedInstanceState, não null
         MapboxNavigationApp.attach(this)
-
         requestLocationPermission()
-
-        val intent = Intent(this, GpsService::class.java)
-        ContextCompat.startForegroundService(this, intent)
+        // ← ALTERAÇÃO: startForegroundService removido daqui
     }
-
 
     override fun onResume() {
         super.onResume()
-
         if (waitingForBackgroundPermission) {
             waitingForBackgroundPermission = false
-
             if (!hasBackgroundLocationPermission()) {
                 showBackgroundPermissionRequiredMessage()
             }
@@ -149,7 +147,6 @@ class MainActivity : ReactActivity() {
     }
 
     override fun getMainComponentName(): String = "app"
-
     override fun createReactActivityDelegate(): ReactActivityDelegate =
         DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
 

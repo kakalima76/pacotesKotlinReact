@@ -8,9 +8,7 @@ import com.mapbox.common.location.BaseLocationProvider
 import com.mapbox.common.location.DeviceLocationProvider
 import com.mapbox.common.location.GetLocationCallback
 import com.mapbox.common.location.toCommonLocation
-import android.util.Log
 import com.app.navigation.map.NavigationMapViewManager
-
 
 class GpsLocationProvider : BaseLocationProvider(), DeviceLocationProvider {
 
@@ -27,12 +25,6 @@ class GpsLocationProvider : BaseLocationProvider(), DeviceLocationProvider {
         NavigationMapViewManager.updateLocation(
             location.latitude,
             location.longitude
-        )
-
-        Log.d(
-            "GpsLocationProvider",
-            "Enviando localização para o Mapbox: " +
-                    "${location.latitude}, ${location.longitude}"
         )
 
         notifyLocationUpdate(

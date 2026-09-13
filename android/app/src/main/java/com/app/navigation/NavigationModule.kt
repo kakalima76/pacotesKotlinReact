@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.app.navigation.map.NavigationMapViewManager
 
 class NavigationModule(
     reactContext: ReactApplicationContext
@@ -27,9 +28,18 @@ class NavigationModule(
                     val map = Arguments.createMap()
 
                     map.putString("id", maneuver.id)
+
                     map.putString("text", maneuver.text)
                     map.putString("type", maneuver.type)
                     map.putString("modifier", maneuver.modifier)
+
+                    map.putString("secondaryText", maneuver.secondaryText)
+                    map.putString("secondaryType", maneuver.secondaryType)
+                    map.putString("secondaryModifier", maneuver.secondaryModifier)
+
+                    map.putString("subText", maneuver.subText)
+                    map.putString("subType", maneuver.subType)
+                    map.putString("subModifier", maneuver.subModifier)
 
                     map.putDouble(
                         "distanceRemaining",
@@ -50,6 +60,8 @@ class NavigationModule(
                         "longitude",
                         maneuver.longitude
                     )
+
+                    map.putString("nextRoadName", maneuver.nextRoadName)  // ← ALTERAÇÃO
 
                     array.pushMap(map)
                 }
@@ -111,6 +123,7 @@ class NavigationModule(
         destinationLongitude: Double
     ) {
         Handler(Looper.getMainLooper()).post {
+            NavigationMapViewManager.setNavigationActive(true)  // ← ALTERAÇÃO
             navigationService.setRoute(
                 originLatitude,
                 originLongitude,
@@ -119,4 +132,13 @@ class NavigationModule(
             )
         }
     }
+
+    @ReactMethod
+    fun stopNavigation() {
+        Handler(Looper.getMainLooper()).post {
+            NavigationMapViewManager.setNavigationActive(false)
+            NavigationMapViewManager.updateRoute(emptyList())
+        }
+    }
+
 }

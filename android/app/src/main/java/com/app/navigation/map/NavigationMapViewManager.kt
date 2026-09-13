@@ -5,44 +5,37 @@ import com.facebook.react.uimanager.ThemedReactContext
 
 class NavigationMapViewManager :
     SimpleViewManager<NavigationMapView>() {
-
     companion object {
         private var instance: NavigationMapViewManager? = null
+
+        // ← ALTERAÇÃO: setter para ativar/desativar modo navegação
+        fun setNavigationActive(active: Boolean) {
+            instance?.view?.navigationActive = active
+            if (!active) {
+                instance?.view?.cameraFollowing = false
+            } else {
+                instance?.view?.setZoomLevel(15.0)  // ← ALTERAÇÃO: zoom padrão ao iniciar
+            }
+        }
 
         fun updateLocation(
             latitude: Double,
             longitude: Double
         ) {
-            android.util.Log.d(
-                "NavigationMapView",
-                "UPDATE CAMERA: $latitude, $longitude"
-            )
-
-            android.util.Log.d(
-                "NavigationMapView",
-                "VIEW EXISTE: ${instance?.view != null}"
-            )
-
             instance?.view?.updateLocation(
                 latitude,
                 longitude
             )
         }
-
         fun updatePuckLocation(
             location: com.mapbox.common.location.Location
         ) {
-            android.util.Log.d(
-                "NavigationMapView",
-                "UPDATE PUCK: ${location.latitude}, ${location.longitude}"
-            )
+            // ← ALTERAÇÃO: durante navegação, o updateNavigationLocation
+            // controla o puck com keyPoints reais (route snapping)
+            val view = instance?.view ?: return
+            if (view.navigationActive) return
 
-            android.util.Log.d(
-                "NavigationMapView",
-                "VIEW EXISTE PUCK: ${instance?.view != null}"
-            )
-
-            instance?.view?.navigationLocationProvider?.changePosition(
+            view.navigationLocationProvider.changePosition(
                 location = location,
                 keyPoints = emptyList()
             )
@@ -52,47 +45,23 @@ class NavigationMapViewManager :
             location: com.mapbox.common.location.Location,
             keyPoints: List<com.mapbox.common.location.Location>
         ) {
-            android.util.Log.d(
-                "NavigationMapView",
-                "Enviando MATCHED para NavigationLocationProvider: " +
-                        "${location.latitude}, ${location.longitude}"
-            )
-
             instance?.view?.navigationLocationProvider?.changePosition(
                 location = location,
                 keyPoints = keyPoints
             )
-
-            android.util.Log.d(
-                "NavigationMapView",
-                "ANTES de chamar updateNavigationLocation()"
-            )
-
             instance?.view?.updateNavigationLocation(
                 location,
                 keyPoints
             )
-
-            android.util.Log.d(
-                "NavigationMapView",
-                "DEPOIS de chamar updateNavigationLocation()"
-            )
         }
-
         fun updateRoute(
             routes: List<com.mapbox.navigation.base.route.NavigationRoute>
         ) {
-            android.util.Log.d(
-                "NavigationMapView",
-                "updateRoute() MANAGER: ${routes.size}"
-            )
-
             instance?.view?.updateRoute(routes)
+        }
 
-            android.util.Log.d(
-                "NavigationMapView",
-                "updateRoute() MANAGER FINALIZADO"
-            )
+        fun setZoomLevel(zoom: Double) {
+            instance?.view?.setZoomLevel(zoom)
         }
     }
 
@@ -109,11 +78,18 @@ class NavigationMapViewManager :
     override fun createViewInstance(
         reactContext: ThemedReactContext
     ): NavigationMapView {
-
         val mapView = NavigationMapView(reactContext)
-
         view = mapView
-
         return mapView
+    }
+
+    // ← ALTERAÇÃO: limpa referências quando o React Native desmonta a view
+    override fun onDropViewInstance(view: NavigationMapView) {
+        this.view = null
+        // ← Se for o único manager ativo, remove a referência estática
+        if (instance === this) {
+            instance = null
+        }
+        super.onDropViewInstance(view)
     }
 }

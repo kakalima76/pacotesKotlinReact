@@ -14,6 +14,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import android.content.pm.ServiceInfo
 
 class GpsService : Service() {
 
@@ -71,7 +72,6 @@ class GpsService : Service() {
         flags: Int,
         startId: Int
     ): Int {
-
         val notification = NotificationCompat.Builder(
             this,
             "GPS_CHANNEL"
@@ -82,10 +82,18 @@ class GpsService : Service() {
             .setOngoing(true)
             .build()
 
-        startForeground(1, notification)
-
+        // ← ALTERAÇÃO: declarar o tipo do foreground service
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(
+                1,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+            )
+        } else {
+            startForeground(1, notification)
+        }
+        getCurrentLocation()
         startLocationUpdates()
-
         return START_STICKY
     }
 

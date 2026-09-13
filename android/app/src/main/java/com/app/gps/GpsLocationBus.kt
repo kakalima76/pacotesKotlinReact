@@ -1,27 +1,14 @@
 package com.app.gps
 
 import android.location.Location
-import android.util.Log
-
+import java.util.concurrent.CopyOnWriteArraySet  // ← ALTERAÇÃO: import adicionado
 
 object GpsLocationBus {
-
     private val listeners =
-        mutableSetOf<(Location) -> Unit>()
+        CopyOnWriteArraySet<(Location) -> Unit>()  // ← ALTERAÇÃO: mutableSetOf → CopyOnWriteArraySet
 
     fun subscribe(listener: (Location) -> Unit) {
-
-        Log.d(
-            "GpsLocationBus",
-            "SUBSCRIBE: ${listener}"
-        )
-
         listeners.add(listener)
-
-        Log.d(
-            "GpsLocationBus",
-            "TOTAL LISTENERS: ${listeners.size}"
-        )
     }
 
     fun unsubscribe(listener: (Location) -> Unit) {
@@ -29,36 +16,11 @@ object GpsLocationBus {
     }
 
     fun emit(location: Location) {
-
-        Log.d(
-            "GpsLocationBus",
-            "emit() chamado — listeners: ${listeners.size}"
-        )
-
-        listeners.forEachIndexed { index, listener ->
-
-            Log.d(
-                "GpsLocationBus",
-                "ANTES listener $index — " +
-                        "${location.latitude}, ${location.longitude}"
-            )
-
+        listeners.forEach { listener ->
             try {
-
                 listener(location)
-
-                Log.d(
-                    "GpsLocationBus",
-                    "DEPOIS listener $index"
-                )
-
             } catch (e: Exception) {
-
-                Log.e(
-                    "GpsLocationBus",
-                    "ERRO ao executar listener $index",
-                    e
-                )
+                // Exceção do listener é ignorada para não interromper os demais
             }
         }
     }
