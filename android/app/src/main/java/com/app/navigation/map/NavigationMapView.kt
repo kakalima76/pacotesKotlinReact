@@ -38,6 +38,8 @@ class NavigationMapView(
     private val routeArrowOptions by lazy {
         RouteArrowOptions.Builder(context)
             .withAboveLayerId(TOP_LEVEL_ROUTE_LINE_LAYER_ID)
+            .withArrowColor(0xFFFF0000.toInt())        // corpo vermelho
+            .withArrowCasingColor(0xFF8B0000.toInt())   // borda vermelho-escuro
             .build()
     }
 

@@ -245,14 +245,5 @@ class NavigationService(
         )
     }
 
-    fun stopNavigation() {
-        val nav = navigation ?: return
-        nav.unregisterLocationObserver(locationObserver)
-        nav.unregisterRoutesObserver(routesObserver)
-        nav.unregisterRouteProgressObserver(routeProgressObserver)
-        nav.stopTripSession()
-        GpsLocationBus.unsubscribe(gpsListener)
-        NavigationMapViewManager.updateRoute(emptyList())
-        NavigationMapViewManager.setNavigationActive(false)
-    }
+
 }

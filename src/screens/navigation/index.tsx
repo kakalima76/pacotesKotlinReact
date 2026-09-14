@@ -63,6 +63,9 @@ export function NavigationScreen() {
           distanceRemaining={maneuver?.distanceRemaining}
           durationRemaining={tripProgress?.durationRemaining}
           nextRoadName={nextRoadName}
+          subModifier={maneuver?.subType}
+          subType={maneuver?.subModifier}
+          subText={maneuver?.subText}
         ></ManeuverComponent>
       </View>
 

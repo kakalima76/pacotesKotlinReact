@@ -7,6 +7,9 @@ interface IManeuver {
   distanceRemaining?: number | null;
   durationRemaining?: number | null;
   nextRoadName?: string | null;
+  subType?: string | null;
+  subModifier?: string | null;
+  subText?: string | null;
 }
 
 export function ManeuverComponent({
@@ -15,8 +18,12 @@ export function ManeuverComponent({
   distanceRemaining,
   durationRemaining,
   nextRoadName,
+  subType,
+  subModifier,
+  subText,
 }: IManeuver) {
   const direction = translateInstruction(type ?? '', modifier ?? '');
+  const subDirection = translateInstruction(subType ?? '', subModifier ?? '');
 
   if (durationRemaining == null) {
     return <View className="flex-1" />;
@@ -33,8 +40,10 @@ export function ManeuverComponent({
           </View>
 
           <View className="flex-1 items-center justify-center">
-            <Text className="text-2
-            xl text-white font-bold">
+            <Text
+              className="text-2
+            xl text-white font-bold"
+            >
               {nextRoadName}
             </Text>
           </View>
@@ -46,11 +55,22 @@ export function ManeuverComponent({
               {`${distanceRemaining?.toFixed(0)}`}
             </Text>
           </View>
-          <View className="flex-1 items-center justify-center">
-            <Text className="text-xl text-blue-500 font-bold">
-              {direction.text}
-            </Text>
-          </View>
+          {!subType && (
+            <View className="flex-1 items-center justify-center">
+              <Text className="text-xl text-blue-500 font-bold">
+                {direction.text}
+              </Text>
+            </View>
+          )}
+
+          {subType && (
+            <View className="flex-1 items-center justify-center">
+              <Text className="text-4xl text-white font-bold">
+                {subDirection.symbol}
+              </Text>
+              <Text className="text-xl text-white font-bold">{subText}</Text>
+            </View>
+          )}
         </View>
       </View>
     );

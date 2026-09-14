@@ -132,13 +132,4 @@ class NavigationModule(
             )
         }
     }
-
-    @ReactMethod
-    fun stopNavigation() {
-        Handler(Looper.getMainLooper()).post {
-            NavigationMapViewManager.setNavigationActive(false)
-            NavigationMapViewManager.updateRoute(emptyList())
-        }
-    }
-
 }
