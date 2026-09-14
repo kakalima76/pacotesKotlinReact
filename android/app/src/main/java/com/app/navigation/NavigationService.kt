@@ -177,10 +177,15 @@ class NavigationService(
             override fun onRouteProgressChanged(
                 routeProgress: RouteProgress
             ) {
+
+
+
                 val tripProgress = NavigationTripProgress(
                     distanceRemaining = routeProgress.distanceRemaining.toDouble(),
                     durationRemaining = routeProgress.durationRemaining
                 )
+
+
                 onTripProgressChanged(tripProgress)
 
                 if (routeProgress.currentState == RouteProgressState.COMPLETE) {
@@ -188,17 +193,18 @@ class NavigationService(
                     navigation?.stopTripSession()
                     NavigationMapViewManager.updateRoute(emptyList())
                     NavigationMapViewManager.setNavigationActive(false)
+                    NavigationMapViewManager.clearRouteArrows()  // ← ALTERAÇÃO: limpa setas
                     return
                 }
+
+                NavigationMapViewManager.updateRouteArrows(routeProgress)  // ← ALTERAÇÃO: atualiza setas
+
 
                 val maneuvers =
                     maneuverApi.getManeuvers(
                         routeProgress
                     )
                 maneuvers.onValue { maneuverList ->
-                    if (maneuverList.size <= 1) {
-                        NavigationMapViewManager.setZoomLevel(20.0)
-                    }
 
                     // ← ALTERAÇÃO: descobrir o próximo logradouro
                     val upcomingStep = routeProgress.currentLegProgress?.upcomingStep

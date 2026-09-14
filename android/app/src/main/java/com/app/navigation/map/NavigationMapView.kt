@@ -11,10 +11,12 @@ import com.mapbox.maps.plugin.animation.camera
 import com.mapbox.maps.EdgeInsets
 import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowApi
 import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowView
+import com.mapbox.navigation.ui.maps.route.arrow.model.RouteArrowOptions
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineApiOptions
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineViewOptions
+import com.mapbox.navigation.ui.maps.route.RouteLayerConstants.TOP_LEVEL_ROUTE_LINE_LAYER_ID
 
 class NavigationMapView(
     context: Context
@@ -29,16 +31,28 @@ class NavigationMapView(
             viewportDataSource
         )
     internal var cameraFollowing = false
-
-    // ← ALTERAÇÃO: flag para saber se há navegação ativa
     internal var navigationActive = false
+
+    private val routeArrowApi = MapboxRouteArrowApi()
+
+    private val routeArrowOptions by lazy {
+        RouteArrowOptions.Builder(context)
+            .withAboveLayerId(TOP_LEVEL_ROUTE_LINE_LAYER_ID)
+            .build()
+    }
+
+    private val routeArrowView by lazy {
+        MapboxRouteArrowView(routeArrowOptions)
+    }
 
     init {
         viewportDataSource.followingPadding = EdgeInsets(
             100.0, 50.0, 400.0, 50.0
         )
         viewportDataSource.options.followingFrameOptions.zoomUpdatesAllowed = false
+        viewportDataSource.options.followingFrameOptions.maxZoom = 17.0  // ← linha nova
         mapboxMap.loadStyleUri("mapbox://styles/mapbox/standard") {
+            routeLineView.initializeLayers(it)  // ← linha nova
             location.apply {
                 setLocationProvider(navigationLocationProvider)
                 locationPuck = createDefault2DPuck(withBearing = true)
@@ -64,7 +78,6 @@ class NavigationMapView(
         latitude: Double,
         longitude: Double
     ) {
-        // ← ALTERAÇÃO: não move a câmera se a navegação estiver ativa
         if (navigationActive) return
 
         mapboxMap.setCamera(
@@ -75,7 +88,7 @@ class NavigationMapView(
                         latitude
                     )
                 )
-                .zoom(15.0)
+                .zoom(17.0)
                 .build()
         )
     }
@@ -87,6 +100,22 @@ class NavigationMapView(
             mapboxMap.getStyle { style ->
                 routeLineView.renderRouteDrawData(style, result)
             }
+        }
+    }
+
+    fun updateRouteArrows(
+        routeProgress: com.mapbox.navigation.base.trip.model.RouteProgress
+    ) {
+        val arrowUpdate = routeArrowApi.addUpcomingManeuverArrow(routeProgress)
+        mapboxMap.getStyle { style ->
+            routeArrowView.renderManeuverUpdate(style, arrowUpdate)
+        }
+    }
+
+    fun clearRouteArrows() {
+        val arrowUpdate = routeArrowApi.clearArrows()
+        mapboxMap.getStyle { style ->
+            routeArrowView.render(style, arrowUpdate)
         }
     }
 
@@ -108,7 +137,4 @@ class NavigationMapView(
                 .build()
         )
     }
-
-
-
 }

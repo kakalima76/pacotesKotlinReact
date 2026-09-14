@@ -33,7 +33,8 @@ export function ManeuverComponent({
           </View>
 
           <View className="flex-1 items-center justify-center">
-            <Text className="text-2xl text-white font-bold">
+            <Text className="text-2
+            xl text-white font-bold">
               {nextRoadName}
             </Text>
           </View>

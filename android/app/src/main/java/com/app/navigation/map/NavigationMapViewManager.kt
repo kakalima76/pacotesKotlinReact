@@ -3,9 +3,19 @@ package com.app.navigation.map
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 
+
 class NavigationMapViewManager :
     SimpleViewManager<NavigationMapView>() {
     companion object {
+
+        fun updateRouteArrows(routeProgress: com.mapbox.navigation.base.trip.model.RouteProgress) {
+            instance?.view?.updateRouteArrows(routeProgress)
+        }
+
+        fun clearRouteArrows() {
+            instance?.view?.clearRouteArrows()
+        }
+
         private var instance: NavigationMapViewManager? = null
 
         // ← ALTERAÇÃO: setter para ativar/desativar modo navegação
