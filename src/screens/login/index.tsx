@@ -27,7 +27,12 @@ export function LoginScreen() {
 
         <Button
           title="Entrar"
-          onPress={() => navigation.navigate('Navigation')}
+          onPress={() =>
+            navigation.navigate('Navigation', {
+              lat: -22.94911846379087,
+              lng: -42.98114469339183,
+            })
+          }
         />
       </View>
     </View>
