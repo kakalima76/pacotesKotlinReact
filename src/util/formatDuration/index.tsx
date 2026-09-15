@@ -24,5 +24,5 @@ export function formatDuration(seconds: number): string {
     return minutes > 0 ? `${hours}h ${minutes}min` : `${hours}h`;
   }
 
-  return `${minutes}m`;
+  return `${minutes}min`;
 }

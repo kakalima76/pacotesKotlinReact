@@ -16,6 +16,7 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnable
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.app.gps.GpsService
 import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp
+import com.app.auth.AuthService
 
 class MainActivity : ReactActivity() {
     private var waitingForBackgroundPermission = false
@@ -133,7 +134,12 @@ class MainActivity : ReactActivity() {
         super.onCreate(savedInstanceState)  // ← ALTERAÇÃO: passar savedInstanceState, não null
         MapboxNavigationApp.attach(this)
         requestLocationPermission()
-        // ← ALTERAÇÃO: startForegroundService removido daqui
+        val authService = AuthService()
+
+        authService.login(
+            "nieraldo",
+            "123456"
+        )
     }
 
     override fun onResume() {
