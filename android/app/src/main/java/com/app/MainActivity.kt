@@ -18,6 +18,7 @@ import com.app.gps.GpsService
 import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp
 import com.app.auth.AuthService
 
+
 class MainActivity : ReactActivity() {
     private var waitingForBackgroundPermission = false
     private var gpsServiceStarted = false  // ← ALTERAÇÃO: evita iniciar o service duas vezes
@@ -136,10 +137,7 @@ class MainActivity : ReactActivity() {
         requestLocationPermission()
         val authService = AuthService()
 
-        authService.login(
-            "nieraldo",
-            "123456"
-        )
+
     }
 
     override fun onResume() {
