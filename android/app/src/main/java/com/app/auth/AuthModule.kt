@@ -53,20 +53,99 @@ class AuthModule(
     @ReactMethod
     fun getValidAccessToken(promise: Promise) {
 
+        getValidAccessTokenInternal(
+            onSuccess = { accessToken ->
+
+                promise.resolve(accessToken)
+            },
+            onError = {
+
+                promise.reject(
+                    "AUTH_REQUIRED",
+                    "Nenhum refresh token disponível"
+                )
+            }
+        )
+    }
+
+    @ReactMethod
+    fun getAuthenticatedUser(promise: Promise) {
+
+        getValidAccessTokenInternal(
+            onSuccess = { accessToken ->
+
+                try {
+                    val payload = accessToken
+                        .split(".")
+                        .getOrNull(1)
+                        ?: throw IllegalArgumentException("Token inválido")
+
+                    val decoded = String(
+                        android.util.Base64.decode(
+                            payload,
+                            android.util.Base64.URL_SAFE or
+                                    android.util.Base64.NO_WRAP
+                        ),
+                        Charsets.UTF_8
+                    )
+
+                    val json = org.json.JSONObject(decoded)
+
+                    val user = Arguments.createMap().apply {
+                        putString("id", json.optString("sub"))
+                        putString(
+                            "username",
+                            json.optString("preferred_username")
+                        )
+                        putString(
+                            "name",
+                            json.optString("name")
+                        )
+                        putString(
+                            "email",
+                            json.optString("email")
+                        )
+                    }
+
+                    promise.resolve(user)
+
+                } catch (e: Exception) {
+
+                    promise.reject(
+                        "AUTH_USER_ERROR",
+                        "Não foi possível obter os dados do usuário"
+                    )
+                }
+            },
+            onError = {
+
+                promise.reject(
+                    "AUTH_REQUIRED",
+                    "Usuário não autenticado"
+                )
+            }
+        )
+    }
+
+    private fun getValidAccessTokenInternal(
+        onSuccess: (String) -> Unit,
+        onError: () -> Unit
+    ) {
+
         if (tokenStorage.isAccessTokenValid()) {
-            promise.resolve(
-                tokenStorage.getAccessToken()
-            )
-            return
+
+            val accessToken = tokenStorage.getAccessToken()
+
+            if (accessToken != null) {
+                onSuccess(accessToken)
+                return
+            }
         }
 
         val refreshToken = tokenStorage.getRefreshToken()
 
         if (refreshToken == null) {
-            promise.reject(
-                "AUTH_REQUIRED",
-                "Nenhum refresh token disponível"
-            )
+            onError()
             return
         }
 
@@ -80,9 +159,7 @@ class AuthModule(
                 expiresIn = result.expiresIn
             )
 
-            promise.resolve(
-                result.accessToken
-            )
+            onSuccess(result.accessToken)
         }
     }
 }

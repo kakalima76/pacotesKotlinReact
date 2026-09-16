@@ -3,6 +3,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { MainStack } from './src/router';
 import { MainProvider } from './src/contexts';
 import { NativeModules } from 'react-native';
+import { AuthProvider } from './src/contexts/auth';
 const { Auth } = NativeModules;
 Auth.login('nieraldo', String(123456));
 

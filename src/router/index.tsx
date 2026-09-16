@@ -5,37 +5,40 @@ import { View, Text } from 'react-native';
 import { LoginScreen } from '../screens/login';
 import { HomeScreen } from '../screens/home';
 import { NavigationScreen } from '../screens/navigation';
+import { AuthProvider } from '../contexts/auth';
 
 const Stack = createNativeStackNavigator();
 
 export function MainStack() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
+      <AuthProvider>
+        <Stack.Navigator initialRouteName="Login">
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
 
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
 
-        <Stack.Screen
-          name="Navigation"
-          component={NavigationScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-      </Stack.Navigator>
+          <Stack.Screen
+            name="Navigation"
+            component={NavigationScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+        </Stack.Navigator>
+      </AuthProvider>
     </NavigationContainer>
   );
 }

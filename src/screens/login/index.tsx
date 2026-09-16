@@ -1,23 +1,26 @@
 //@ts-ignore
 import '../../../global.css';
-import React, { useState } from 'react';
-import { NativeModules, View, TextInput } from 'react-native';
-import { Button } from '../../components/button';
-import { getValidAccessToken } from '../../services/auth';
 
-const { Auth } = NativeModules;
+import React, { useState } from 'react';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+
+import { Button } from '../../components/button';
+import { useAuth } from '../../contexts/auth';
 
 export function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const { login } = useAuth();
 
   const handleLogin = async () => {
-    console.log(username, password);
+    setMessage('');
 
-    await Auth.login(username, password);
+    const r = await login(username, password);
 
-    const accessToken = await getValidAccessToken();
-    console.log(accessToken);
+    !r ? setMessage('credenciais inválidas') : setMessage('');
   };
 
   return (
@@ -32,14 +35,29 @@ export function LoginScreen() {
           autoCapitalize="none"
         />
 
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Senha"
-          placeholderTextColor="#999"
-          className="w-full rounded-lg border border-gray-300 px-4 py-3 text-base"
-          secureTextEntry
-        />
+        <View className="w-full flex-row items-center rounded-lg border border-gray-300">
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Senha"
+            placeholderTextColor="#999"
+            secureTextEntry={!showPassword}
+            className="flex-1 px-4 py-3 text-base"
+          />
+
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            className="px-4 py-3"
+          >
+            <Text className="text-base">
+              {showPassword ? 'Ocultar' : 'Mostrar'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {message && (
+          <Text className="text-center text-xl text-red-600">{message}</Text>
+        )}
 
         <Button title="Entrar" onPress={handleLogin} />
       </View>
