@@ -1,354 +1,258 @@
-package com.app
+package com.app.notification
 
-import android.app.Application
-import com.app.gps.GpsServicePackage
-import com.facebook.react.PackageList
-import com.facebook.react.ReactApplication
-import com.facebook.react.ReactHost
-import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
-import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
-import com.app.navigation.NavigationPackage
-
-class MainApplication : Application(), ReactApplication {
-
-  override val reactHost: ReactHost by lazy {
-    getDefaultReactHost(
-      context = applicationContext,
-      packageList =
-        PackageList(this).packages.apply {
-          add(GpsServicePackage())
-          add(NavigationPackage())
-        },
-    )
-  }
-
-  override fun onCreate() {
-    super.onCreate()
-    loadReactNative(this)
-  }
-}
-
-
-package com.app
-
-import android.Manifest
-import android.app.AlertDialog
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
+import android.app.Activity
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.provider.Settings
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import com.facebook.react.ReactActivity
-import com.facebook.react.ReactActivityDelegate
-import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
-import com.facebook.react.defaults.DefaultReactActivityDelegate
-import com.app.gps.GpsService
-import com.mapbox.navigation.core.lifecycle.MapboxNavigationApp
+import android.view.Gravity
+import android.view.WindowManager
+import android.widget.TextView
+import com.app.R
 
-class MainActivity : ReactActivity() {
-
-    private var waitingForBackgroundPermission = false
-
-    private fun requestLocationPermission() {
-        val fineGranted = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-
-        val coarseGranted = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-
-        if (!fineGranted && !coarseGranted) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ),
-                LOCATION_PERMISSION_REQUEST_CODE
-            )
-        } else {
-            requestBackgroundLocationPermission()
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            val fineGranted = ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-
-            val coarseGranted = ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-
-            if (fineGranted || coarseGranted) {
-                requestBackgroundLocationPermission()
-            }
-        }
-    }
-
-    private fun hasBackgroundLocationPermission(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
-    }
-
-    private fun requestBackgroundLocationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !hasBackgroundLocationPermission()) {
-            if (isFinishing || isDestroyed) return
-
-            AlertDialog.Builder(this)
-                .setTitle("Localização em segundo plano")
-                .setMessage(
-                    "Vá para a aba de PERMISSÕES, clique em LOCALIZAÇÃO " +
-                            "e AUTORIZE a permissão para \"Permitir o tempo todo\" " +
-                            "para continuar usando o aplicativo."
-                )
-                .setNegativeButton("Agora não") { _, _ ->
-                    // Trata o cancelamento sem travar a navegação do usuário
-                    waitingForBackgroundPermission = false
-                }
-                .setPositiveButton("Abrir configurações") { _, _ ->
-                    val intent = Intent(
-                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.parse("package:$packageName")
-                    )
-                    waitingForBackgroundPermission = true
-                    startActivity(intent)
-                }
-                .show()
-        }
-    }
-
-    private fun showBackgroundPermissionRequiredMessage() {
-        if (isFinishing || isDestroyed) return
-
-        AlertDialog.Builder(this)
-            .setTitle("Permissão necessária")
-            .setMessage(
-                "A permissão de localização em segundo plano é necessária " +
-                        "para utilizar este aplicativo."
-            )
-            .setPositiveButton("Fechar aplicativo") { _, _ ->
-                finishAndRemoveTask()
-            }
-            .setCancelable(false)
-            .show()
-    }
+class NotificationActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(null)
+        super.onCreate(savedInstanceState)
 
-        MapboxNavigationApp.attach(this)
+        setContentView(R.layout.activity_notification)
 
-        requestLocationPermission()
+        configurarJanela()
 
-        val intent = Intent(this, GpsService::class.java)
-        ContextCompat.startForegroundService(this, intent)
+        val entrega = NovaEntregaDTO(
+            estabelecimento = intent.getStringExtra("estabelecimento").orEmpty(),
+            quantidade = intent.getIntExtra("quantidade", 0),
+            distancia = intent.getStringExtra("distancia").orEmpty(),
+            valor = intent.getStringExtra("valor").orEmpty()
+        )
+
+        preencherTela(entrega)
     }
 
+    private fun configurarJanela() {
+        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
 
-    override fun onResume() {
-        super.onResume()
+        val params = window.attributes
+        params.width = (resources.displayMetrics.widthPixels * 0.90).toInt()
+        params.height = WindowManager.LayoutParams.WRAP_CONTENT
+        params.gravity = Gravity.CENTER
+        params.dimAmount = 0.15f
 
-        if (waitingForBackgroundPermission) {
-            waitingForBackgroundPermission = false
-
-            if (!hasBackgroundLocationPermission()) {
-                showBackgroundPermissionRequiredMessage()
-            }
-        }
+        window.attributes = params
     }
 
-    override fun getMainComponentName(): String = "app"
+    private fun preencherTela(entrega: NovaEntregaDTO) {
+        findViewById<TextView>(R.id.establishmentName).text =
+            entrega.estabelecimento
 
-    override fun createReactActivityDelegate(): ReactActivityDelegate =
-        DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+        findViewById<TextView>(R.id.deliveryQuantity).text =
+            "${entrega.quantidade} entregas"
 
-    companion object {
-        private const val LOCATION_PERMISSION_REQUEST_CODE = 100
+        findViewById<TextView>(R.id.distance).text =
+            entrega.distancia
+
+        findViewById<TextView>(R.id.deliveryValue).text =
+            entrega.valor
     }
 }
 
-package com.app.gps
 
-import android.location.Location
+<resources>
 
-object GpsLocationBus {
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+    </style>
 
-    private val listeners =
-        mutableSetOf<(Location) -> Unit>()
+    <style name="NotificationTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
 
-    fun subscribe(listener: (Location) -> Unit) {
-        listeners.add(listener)
-    }
+</resources>
 
-    fun unsubscribe(listener: (Location) -> Unit) {
-        listeners.remove(listener)
-    }
+<resources>
 
-    fun emit(location: Location) {
-        listeners.forEach { listener ->
-            try {
-                listener(location)
-            } catch (e: Exception) {
-                // Exceção do listener é ignorada para não interromper os demais
-            }
-        }
-    }
-}
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+    </style>
 
-package com.app.gps
+    <style name="NotificationTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
 
-import android.annotation.SuppressLint
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.Service
-import android.content.Intent
-import android.os.Build
-import android.os.IBinder
-import androidx.core.app.NotificationCompat
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
+</resources>
 
-class GpsService : Service() {
+<?xml version="1.0" encoding="utf-8"?>
 
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="300dp"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="@drawable/notification_background">
 
-    private lateinit var locationRequest: LocationRequest
+    <TextView
+        android:id="@+id/establishmentName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textColor="#000000" />
 
-    private val locationCallback = object : LocationCallback() {
+    <TextView
+        android:id="@+id/deliveryQuantity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:gravity="center"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#000000" />
 
-        override fun onLocationResult(locationResult: LocationResult) {
+    <TextView
+        android:id="@+id/distance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:gravity="center"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#000000" />
 
-            for (location in locationResult.locations) {
+    <TextView
+        android:id="@+id/deliveryValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textColor="#000000" />
 
-                GpsLocationBus.emit(location)
-            }
-        }
-    }
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:orientation="horizontal">
 
-    @SuppressLint("MissingPermission")
-    private fun startLocationUpdates() {
+        <Button
+            android:id="@+id/refuseButton"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:text="RECUSAR"
+            android:textSize="16sp" />
 
-        fusedLocationClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback,
-            mainLooper
-        )
-    }
+        <Space
+            android:layout_width="16dp"
+            android:layout_height="1dp" />
 
-    private fun stopLocationUpdates() {
+        <Button
+            android:id="@+id/acceptButton"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:text="ACEITAR"
+            android:textSize="16sp" />
 
-        fusedLocationClient.removeLocationUpdates(
-            locationCallback
-        )
-    }
+    </LinearLayout>
 
-    override fun onCreate() {
+</LinearLayout>
 
-        super.onCreate()
 
-        fusedLocationClient =
-            LocationServices.getFusedLocationProviderClient(this)
 
-        locationRequest = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY,
-            5000L
-        )
-            .setMinUpdateIntervalMillis(2000L)
-            .build()
+<?xml version="1.0" encoding="utf-8"?>
 
-        createNotificationChannel()
-    }
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
 
-    override fun onStartCommand(
-        intent: Intent?,
-        flags: Int,
-        startId: Int
-    ): Int {
+    <solid android:color="#FFFFFF" />
 
-        val notification = NotificationCompat.Builder(
-            this,
-            "GPS_CHANNEL"
-        )
-            .setContentTitle("Localização ativa")
-            .setContentText("O GPS está funcionando")
-            .setSmallIcon(android.R.drawable.ic_menu_mylocation)
-            .setOngoing(true)
-            .build()
+    <corners android:radius="20dp" />
 
-        startForeground(1, notification)
+</shape>
 
-        startLocationUpdates()
+package com.app.notification
 
-        return START_STICKY
-    }
+data class NovaEntregaDTO(
+    val estabelecimento: String,
+    val quantidade: Int,
+    val distancia: String,
+    val valor: String
+)
 
-    @SuppressLint("MissingPermission")
-    private fun getCurrentLocation() {
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-        fusedLocationClient.getCurrentLocation(
-            Priority.PRIORITY_HIGH_ACCURACY,
-            null
-        ).addOnSuccessListener { location ->
+    <!-- Permissões de Rede -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
-            if (location != null) {
+    <!-- Permissões de Localização -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
-                GpsLocationBus.emit(location)
-            }
-        }
-    }
+    <!-- Permissões de Foreground Service (Android 9+ e Android 14+) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
-    private fun createNotificationChannel() {
+    <!-- REMOVE a permissão automática do Android 13+ -->
+    <uses-permission
+        android:name="android.permission.NEARBY_WIFI_DEVICES"
+        tools:node="remove" />
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    <application
+        android:name=".MainApplication"
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:allowBackup="false"
+        android:theme="@style/AppTheme"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="true">
 
-            val channel = NotificationChannel(
-                "GPS_CHANNEL",
-                "Localização",
-                NotificationManager.IMPORTANCE_LOW
-            )
+        <activity
+            android:name=".notification.NotificationActivity"
+            android:theme="@style/NotificationTheme"
+            android:exported="true" />
 
-            val notificationManager =
-                getSystemService(NotificationManager::class.java)
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize"
+            android:exported="true">
 
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
 
-    override fun onDestroy() {
+        </activity>
 
-        stopLocationUpdates()
+        <!-- Serviço de GPS -->
+        <service
+            android:name=".gps.GpsService"
+            android:foregroundServiceType="location"
+            android:exported="false" />
 
-        super.onDestroy()
-    }
+    </application>
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
-}
+</manifest>
+
+
+
 
