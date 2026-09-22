@@ -17,10 +17,21 @@ export function LoginScreen() {
 
   const handleLogin = async () => {
     setMessage('');
+    try{
 
-    const r = await login(username, password);
+        console.log('CLIQUEI')
 
-    !r ? setMessage('credenciais inválidas') : setMessage('');
+         const r = await login(username, password);
+            !r ? setMessage('credenciais inválidas') : setMessage('');
+
+        }
+    catch(e){
+
+        console.log(e)
+
+        }
+
+
   };
 
   return (

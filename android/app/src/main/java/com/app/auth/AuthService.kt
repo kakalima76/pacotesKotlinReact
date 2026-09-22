@@ -4,6 +4,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 import org.json.JSONObject
+import com.app.BuildConfig
 
 class AuthService {
 
@@ -16,8 +17,9 @@ class AuthService {
 
         Thread {
 
+
             val url = URL(
-                "http://10.0.2.2:8080/realms/app/protocol/openid-connect/token"
+                "${BuildConfig.KEYCLOAK_URL}/realms/app/protocol/openid-connect/token"
             )
 
             val connection = url.openConnection() as HttpURLConnection
@@ -87,7 +89,7 @@ class AuthService {
         Thread {
 
             val url = URL(
-                "http://10.0.2.2:8080/realms/app/protocol/openid-connect/token"
+                "${BuildConfig.KEYCLOAK_URL}/realms/app/protocol/openid-connect/token"
             )
 
             val connection = url.openConnection() as HttpURLConnection

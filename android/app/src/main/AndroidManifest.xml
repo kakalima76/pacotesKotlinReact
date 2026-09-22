@@ -9,9 +9,14 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
-    <!-- Permissões de Foreground Service (Android 9+ e Android 14+) -->
+    <!-- Foreground Service -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <!-- Notificações / Overlay -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- REMOVE a permissão automática do Android 13+ -->
     <uses-permission
@@ -28,11 +33,13 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="true">
 
+        <!-- Popup tradicional -->
         <activity
             android:name=".notification.NotificationActivity"
             android:theme="@style/NotificationTheme"
             android:exported="true" />
 
+        <!-- Activity principal -->
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -53,6 +60,40 @@
             android:name=".gps.GpsService"
             android:foregroundServiceType="location"
             android:exported="false" />
+
+        <!-- Serviço que recebe mensagens FCM -->
+        <service
+            android:name=".notification.NotificationService"
+            android:exported="false">
+
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+
+        </service>
+
+        <!-- Serviço responsável pelo popup sobre outros aplicativos -->
+        <service
+            android:name=".notification.DeliveryOverlayService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Exibição de novas entregas sobre outros aplicativos" />
+
+        </service>
+
+        <service
+            android:name=".notification.DeliveryOverlayService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Exibição de novas entregas sobre outros aplicativos" />
+
+        </service>
 
     </application>
 

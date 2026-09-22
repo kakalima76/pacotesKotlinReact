@@ -153,4 +153,15 @@ class TokenStorage(
             .clear()
             .apply()
     }
+
+    fun saveFcmToken(token: String) {
+        preferences.edit()
+            .putString("fcm_token", token)
+            .apply()
+    }
+
+    fun getFcmToken(): String? {
+        return preferences
+            .getString("fcm_token", null)
+    }
 }

@@ -1,4 +1,10 @@
 {
   "name": "app",
-  "displayName": "app"
+  "displayName": "app",
+  "extra": {
+    "eas": {
+      "projectId": "6815dcd9-da42-4ad3-96b7-cfdaee8683f7"
+    }
+  },
+  "owner": "nieraldo"
 }

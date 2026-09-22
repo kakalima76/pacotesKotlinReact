@@ -5,6 +5,8 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import com.app.notification.api.NotificationApi
+import android.util.Log
 
 class AuthModule(
     reactContext: ReactApplicationContext
@@ -28,10 +30,35 @@ class AuthModule(
             password = password,
             onResult = { result ->
 
+                Log.d("AUTH_FLOW", "AuthService.login() retornou sucesso")
+
                 tokenStorage.save(
                     accessToken = result.accessToken,
                     refreshToken = result.refreshToken,
                     expiresIn = result.expiresIn
+                )
+
+                Log.d("AUTH_FLOW", "Tokens salvos no TokenStorage")
+
+                NotificationApi(tokenStorage)
+                    .registerFcmToken(
+                        onSuccess = {
+                            Log.d(
+                                "AUTH_FLOW",
+                                "registerFcmToken() sucesso"
+                            )
+                        },
+                        onError = {error ->
+                            Log.e(
+                                "AUTH_FLOW",
+                                "registerFcmToken() erro: $error"
+                            )
+                        }
+                    )
+
+                Log.d(
+                    "AUTH_FLOW",
+                    "NotificationApi.registerFcmToken() chamado"
                 )
 
                 val response = Arguments.createMap().apply {
@@ -41,6 +68,11 @@ class AuthModule(
                 promise.resolve(response)
             },
             onError = { error ->
+
+                Log.e(
+                    "AUTH_FLOW",
+                    "AuthService.login() erro: $error"
+                )
 
                 promise.reject(
                     "AUTH_ERROR",
